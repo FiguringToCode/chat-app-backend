@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken')
 const authRoutes = require('./routes/auth')
 const { Server } = require('socket.io')
 const Messages = require('./models/Messages.model')
-const ChatUser = require('./models/ChatUser.model')
+const ChatUser = require('./models/User.model')
 
 const SECRET_KEY = "#0310KingFish"
 const MY_SECRET = "4691@Yash"
