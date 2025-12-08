@@ -16,7 +16,7 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json())
 
 
@@ -28,8 +28,8 @@ mongoose.connect(process.env.MONGODB, {
   .catch(error => console.error("MongoDB connection error", error))
 
 
-const SECRET_KEY = process.env.ADMIN_SECRET
-const MY_SECRET = process.env.JWT_SECRET
+const SECRET_KEY = process.env.SECRET_KEY
+const MY_SECRET = process.env.MY_SECRET
 
 app.post('/admin/secret', (req, res) => {
     const { secret } = req.body
@@ -108,5 +108,5 @@ app.get('/users', async (req, res) => {
 
 
 
-const PORT = process.env.PORT || 5001
+const PORT = process.env.MONGODB
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`))
