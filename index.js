@@ -14,21 +14,7 @@ dotenv.config()
 
 const app = express()
 const server = http.createServer(app)
-<<<<<<< HEAD
 const io = new Server(server)
-=======
-const io = new Server(server, {
-    cors: {
-        origin: "*"
-    }
-})
->>>>>>> 2ddadb392ae7118c0cef9a41f6ab88d3bdb5bbd3
-
-const corsOptions = {
-    origin: "*",
-    credentials: true,
-    optionSuccessStatus: 200
-}
 
 app.use(cors(corsOptions))
 app.use(express.json())
@@ -122,10 +108,5 @@ app.get('/users', async (req, res) => {
 
 
 
-<<<<<<< HEAD
 const PORT = process.env.PORT || 5001
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-=======
-const PORT = process.env.MONGODB
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
->>>>>>> 2ddadb392ae7118c0cef9a41f6ab88d3bdb5bbd3
