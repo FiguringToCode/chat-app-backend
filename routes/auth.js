@@ -39,11 +39,11 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body
 
     try {
-        const user = await ChatUser.findOne({ username })
-        if(!user) return res.status(404).json({message: "Username not found."})
+        const user = await ChatUser.findOne({ username: username })
+        if(!user) return res.status(401).json({error: "Username not found."})
 
         const isPasswordMatched = await bcrypt.compare(password, user.password)
-        if(!isPasswordMatched) return res.status(400).json({message: "Incorrect Password"})
+        if(!isPasswordMatched) return res.status(401).json({error: "Incorrect Password"})
 
         const token = jwt.sign({id: user._id}, JWT_SECRET, {expiresIn: "4h"})
 

@@ -10,26 +10,27 @@ const Messages = require('./models/Messages.model')
 const ChatUser = require('./models/User.model')
 
 
+
 dotenv.config()
 
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server)
+const io = new Server(server, {
+    cors: {origin: "*"}
+})
 
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json())
 
 
 
 mongoose.connect(process.env.MONGODB, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
 }).then(() => console.log("Connected to MongoDB"))
   .catch(error => console.error("MongoDB connection error", error))
 
 
-const SECRET_KEY = process.env.ADMIN_SECRET
-const MY_SECRET = process.env.JWT_SECRET
+const SECRET_KEY = process.env.SECRET_KEY
+const MY_SECRET = process.env.MY_SECRET
 
 app.post('/admin/secret', (req, res) => {
     const { secret } = req.body
@@ -49,25 +50,44 @@ app.use("/auth", authRoutes)
 
 // socket io logic
 io.on("connection", (socket) => {
-    console.log("User connected", socket.id)
+    // console.log("User connected", socket.id)
+
+    socket.on("join_chat", (userId) => {
+        socket.join(userId)
+        console.log(`User ${userId} joined room`)
+    })
 
     socket.on("send_message", async (data) => {
         try {
             const { sender, receiver, message } = data
-            const newMessage = new Messages({ sender, receiver, message })
+            const newMessage = new Messages({ sender, receiver, message, status: 'delivered' })
             await newMessage.save()
             
-            socket.to(receiver).emit("receive_message", data)
-            socket.emit("message_sent", data)
+            io.to(receiver).emit("receive_message", newMessage)
+            io.emit("message_sent", newMessage)
         } catch (error) {
             console.log("Message save error: ", error)
             socket.emit("message_error", { error: "Failed to save message" })
         }
     })
 
-    socket.on("join_chat", (userId) => {
-        socket.join(userId)
-        console.log(`User ${userId} joined room`)
+    
+    socket.on("typing", (data) => {
+        socket.to(data.receiver).emit("user_typing", { username: data.sender, receiver: data.receiver })
+    })
+
+    socket.on("stop_typing", (data) => {
+        socket.to(data.receiver).emit("user_stop_typing", data.sender)
+    })
+
+    socket.on("message_delivered", async (data) => {
+        await Messages.updateOne({_id: data.messageId}, {status: 'delivered'})
+        socket.to(data.receiver).emit("message_delivered", data)
+    })
+
+    socket.on("message_read", async (data) => {
+        await Messages.updateOne({_id: data.messageId}, {status: 'read'})
+        socket.to(data.sender).emit("message_read", data)
     })
 
     socket.on("disconnect", () => {
@@ -108,5 +128,5 @@ app.get('/users', async (req, res) => {
 
 
 
-const PORT = process.env.PORT || 5001
+const PORT = process.env.MONGODB
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`))
