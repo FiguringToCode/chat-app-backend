@@ -73,11 +73,13 @@ io.on("connection", (socket) => {
 
     
     socket.on("typing", (data) => {
+        console.log("Typing: ", data)
         socket.to(data.receiver).emit("user_typing", { username: data.sender, receiver: data.receiver })
     })
 
     socket.on("stop_typing", (data) => {
-        socket.to(data.receiver).emit("user_stop_typing", data.sender)
+        console.log("Stop typing: ", data)
+        socket.to(data.receiver).emit("user_stop_typing", { sender: data.sender, receiver: data.receiver})
     })
 
     socket.on("message_delivered", async (data) => {
@@ -128,5 +130,5 @@ app.get('/users', async (req, res) => {
 
 
 
-const PORT = process.env.MONGODB
+const PORT = process.env.PORT || 5001
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`))
